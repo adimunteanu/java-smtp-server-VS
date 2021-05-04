@@ -6,7 +6,7 @@ public class IOUtils {
     private static final String BASE_PATH = System.getProperty("user.dir");
     private static final String EMAILS_PATH = "/emails";
 
-    public static boolean initRoot(){
+    private static boolean initRoot(){
         File root = new File(BASE_PATH + EMAILS_PATH);
 
         if(!root.exists()){
@@ -16,7 +16,7 @@ public class IOUtils {
         return true;
     }
 
-    public static boolean initReceiver(String email) {
+    private static boolean initReceiver(String email) {
 
         File root = new File(BASE_PATH + EMAILS_PATH);
 
