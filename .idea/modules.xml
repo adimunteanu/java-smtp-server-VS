@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/java-smtp-server-VS.iml" filepath="$PROJECT_DIR$/java-smtp-server-VS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/java-smtp-server-VS.iml" filepath="$PROJECT_DIR$/.idea/java-smtp-server-VS.iml" />
     </modules>
   </component>
 </project>
