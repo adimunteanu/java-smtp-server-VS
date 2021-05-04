@@ -20,7 +20,7 @@ public class IOUtils {
 
         File root = new File(BASE_PATH + EMAILS_PATH);
 
-        if(!root.exists()){
+        if(!initRoot()){
             try {
                 throw new Exception("Root folder does not exist. Please initialize the root folder first.");
             } catch (Exception e) {
