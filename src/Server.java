@@ -128,8 +128,7 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException {
-        // Selector: multiplexor of SelectableChannel objects
-        Selector selector = null; // selector is open here
+        Selector selector = null;
         try {
             selector = Selector.open();
         } catch (IOException e1) {
@@ -137,14 +136,14 @@ public class Server {
             System.exit(1);
         }
 
-        // ServerSocketChannel: selectable channel for stream-oriented listening sockets
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
+        // Init address to hostname and port
         InetSocketAddress serverAddress = new InetSocketAddress(HOSTNAME, PORT);
 
-        // Binds the channel's serverChannel to a local address and configures the serverChannel to listen for connections
+        // Binds the serverChannel to a local address
         serverChannel.bind(serverAddress);
 
-        // Adjusts this channel's blocking mode.
+        // Set to non-blocking
         serverChannel.configureBlocking(false);
 
         int ops = serverChannel.validOps();
@@ -162,9 +161,8 @@ public class Server {
 
         System.out.printf("The SMTP server is running at %s:%d\n", HOSTNAME, PORT);
 
-        // Keep server running
         while (true) {
-            // Selects a set of keys whose corresponding channels are ready for I/O operations
+            // Selects a set of keys of channels that are ready to I/O
             try {
                 if(selector.select() == 0)
                     continue;
@@ -172,31 +170,34 @@ public class Server {
                 e.printStackTrace();
             }
 
-            // token representing the registration of a SelectableChannel with a Selector
+            // Get all keys from selector
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator<SelectionKey> keysIterator = keys.iterator();
 
+            // Iterate over keys(clients that are ready)
             while (keysIterator.hasNext()) {
                 SelectionKey key = keysIterator.next();
 
-                // Tests whether this key's channel is ready to accept a new serverChannel connection
+                // If a client is ready for connection
                 if (key.isAcceptable()) {
                     SocketChannel smtpClient = serverChannel.accept();
 
-                    // Adjusts this channel's blocking mode to false
+                    // Set to non-blocking
                     smtpClient.configureBlocking(false);
 
-                    // Operation-set bit for read operations
+                    // Set client to read-mode
                     smtpClient.register(selector, SelectionKey.OP_READ);
 
                     System.out.println("A new connection was made with " + smtpClient.getLocalAddress().toString());
 
                     sendResponse(smtpClient, buffer, connectionResponse, true);
-                    // Tests whether this key's channel is ready for reading
+
+                    // If a client is ready to be read
                 } else if (key.isReadable()) {
                     SocketChannel smtpClient = (SocketChannel) key.channel();
                     ClientState state = (ClientState) key.attachment();
 
+                    // Parse command from channel buffer
                     switch (getCommand(smtpClient, buffer, state)) {
                         case HELP:
                             switch (state.getLastState()) { // Send help response according to last client state
