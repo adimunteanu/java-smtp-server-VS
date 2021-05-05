@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -26,6 +25,8 @@ public class Server {
     private static byte[] helpResponseRcpt = null;
     private static byte[] helpResponseNone = null;
     // CONSTANTS
+    private static final String HOSTNAME = "localhost";
+    private static final int PORT = 1337;
     private static final int BUFFER_SIZE = 8192;
     private static final int CRLF_LEN = 2; // Size of \r\n
     private static final int CRLF_DOT_LEN = 5; // Size of \r\n.\r\n
@@ -139,7 +140,7 @@ public class Server {
 
         // ServerSocketChannel: selectable channel for stream-oriented listening sockets
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        InetSocketAddress serverAddress = new InetSocketAddress("localhost", 1111);
+        InetSocketAddress serverAddress = new InetSocketAddress(HOSTNAME, PORT);
 
         // Binds the channel's serverChannel to a local address and configures the serverChannel to listen for connections
         serverChannel.bind(serverAddress);
