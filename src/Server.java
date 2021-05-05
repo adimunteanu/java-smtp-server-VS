@@ -17,22 +17,28 @@ public class Server {
     public static byte[] hostName = null;
     public static byte[] connectionResponse = null;
     public static byte[] okayResponse = null;
-    public static byte[] helpResponse = null;
     public static byte[] dataResponse = null;
     public static byte[] quitResponse = null;
+    public static byte[] helpResponseHelo = null;
+    public static byte[] helpResponseMail = null;
+    public static byte[] helpResponseRcpt = null;
+    public static byte[] helpResponseNone = null;
     private static byte [] crnlMsg = null;
     private static ByteBuffer buffer;
 
     public static void initResponses() {
         connectionResponse = new String("220 ").getBytes(messageCharset);
         okayResponse = new String("250 OK").getBytes(messageCharset);
-        helpResponse = new String("214 Lest das RFC").getBytes(messageCharset);
+        helpResponseHelo = new String("214 Lest das RFC: MAIL").getBytes(messageCharset);
+        helpResponseMail = new String("214 Lest das RFC: RCPT").getBytes(messageCharset);
+        helpResponseRcpt = new String("214 Lest das RFC: DATA").getBytes(messageCharset);
+        helpResponseNone = new String("214 Lest das RFC: QUIT oder MAIL").getBytes(messageCharset);
         dataResponse = new String("354 Please send the message").getBytes(messageCharset);
         quitResponse = new String("221 Bye").getBytes(messageCharset);
         crnlMsg = new String("\r\n").getBytes(messageCharset);
     }
 
-    public static Command getCommand(SocketChannel channel, ByteBuffer buffer) throws IOException {
+    public static Command getCommand(SocketChannel channel, ByteBuffer buffer, ClientState state) throws IOException {
         buffer.clear();
         int pos = buffer.position();
         channel.read(buffer);
@@ -45,7 +51,11 @@ public class Server {
 
         switch (new String(command, messageCharset)) {
             case "HELP":
-                return Command.HELP;
+                if(state != null && state.getLastState() != null && state.getLastState() == Command.DATA){
+                    return Command.NONE;
+                }else{
+                    return Command.HELP;
+                }
             case "HELO":
                 return Command.HELO;
             case "MAIL":
@@ -208,27 +218,45 @@ public class Server {
                     SocketChannel smtpClient = (SocketChannel) key.channel();
                     ClientState state = (ClientState) key.attachment();
 
-                    switch (getCommand(smtpClient, buffer)) {
+                    switch (getCommand(smtpClient, buffer, state)) {
                         case HELP:
-                            sendResponse(smtpClient, buffer, helpResponse, false);
+                            switch(state.getLastState()){
+                                case HELO:
+                                    sendResponse(smtpClient, buffer, helpResponseHelo, false);
+                                    break;
+                                case MAIL:
+                                    sendResponse(smtpClient, buffer, helpResponseMail, false);
+                                    break;
+                                case RCPT:
+                                    sendResponse(smtpClient, buffer, helpResponseRcpt, false);
+                                    break;
+                                case NONE:
+                                    sendResponse(smtpClient, buffer, helpResponseNone, false);
+                                    break;
+                            }
                             break;
                         case HELO:
                             state = new ClientState();
                             state.setMessage_id((int) (Math.random() * 9999));
+                            state.setLastState(Command.HELO);
                             key.attach(state);
                             sendResponse(smtpClient, buffer, okayResponse, false);
                             break;
                         case MAIL:
                             state.setSender(new String(readAddress(buffer, 11), messageCharset));
+                            state.setLastState(Command.MAIL);
                             key.attach(state);
                             sendResponse(smtpClient, buffer, okayResponse, false);
                             break;
                         case RCPT:
                             state.setReceiver(new String(readAddress(buffer, 9), messageCharset));
+                            state.setLastState(Command.RCPT);
                             key.attach(state);
                             sendResponse(smtpClient, buffer, okayResponse, false);
                             break;
                         case DATA:
+                            state.setLastState(Command.DATA);
+                            key.attach(state);
                             sendResponse(smtpClient, buffer, dataResponse, false);
                             break;
                         case NONE:
@@ -244,6 +272,8 @@ public class Server {
                                     key.attach(state);
                                     sendResponse(smtpClient, buffer, okayResponse, false);
                                 }
+                                state.setLastState(Command.NONE);
+                                key.attach(state);
                             } else {
                                 state.setMessage(state.getMessage() == null ?
                                         currentMessage :

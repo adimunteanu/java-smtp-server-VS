@@ -3,8 +3,10 @@ public class ClientState {
     String sender;
     String message;
     int message_id;
+    Command lastState;
 
     public ClientState() {
+        lastState = null;
         receiver = null;
         sender = null;
         message = null;
@@ -33,6 +35,14 @@ public class ClientState {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Command getLastState() {
+        return lastState;
+    }
+
+    public void setLastState(Command lastState) {
+        this.lastState = lastState;
     }
 
     public int getMessage_id() {
