@@ -57,6 +57,16 @@ public class IOUtils {
         return false;
     }
 
+    public static boolean createEmailFile(ClientState state){
+        try {
+            createEmailFile(state.receiver, state.sender, state.message_id, state.message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private static String getPathFromReceiver(String email){
         return BASE_PATH + EMAILS_PATH + "/" + email;
     }

@@ -272,7 +272,10 @@ public class Server {
                                     key.attach(state);
                                     sendResponse(smtpClient, buffer, okayResponse, false);
                                 }
+                                IOUtils.createEmailFile(state);
                                 state.setLastState(Command.NONE);
+                                state.setMessage(null);
+                                state.setMessage_id((int) (Math.random() * 9999));
                                 key.attach(state);
                             } else {
                                 state.setMessage(state.getMessage() == null ?
@@ -282,7 +285,6 @@ public class Server {
                             }
                             break;
                         case QUIT:
-                            IOUtils.createEmailFile(state.getReceiver(), state.getSender(), state.getMessage_id(), state.getMessage());
                             sendResponse(smtpClient, buffer, quitResponse, false);
                             key.cancel();
                             key.channel().close();
