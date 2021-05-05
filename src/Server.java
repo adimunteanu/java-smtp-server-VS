@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class Server {
-    private static ByteBuffer buffer;
     private static byte[] hostName = null;
     private static byte [] crnlMsg = null;
     // RESPONSE CODES
@@ -149,7 +148,7 @@ public class Server {
         serverChannel.configureBlocking(false);
 
         int ops = serverChannel.validOps();
-        SelectionKey selectKey = serverChannel.register(selector, ops, null);
+        serverChannel.register(selector, ops, null);
 
         try {
             hostName = java.net.InetAddress.getLocalHost().getHostName().getBytes(MESSAGE_CHARSET);
@@ -159,7 +158,9 @@ public class Server {
         }
 
         initResponses();
-        buffer = ByteBuffer.allocate(BUFFER_SIZE);
+        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
+        System.out.printf("The SMTP server is running at %s:%d\n", HOSTNAME, PORT);
 
         // Keep server running
         while (true) {
@@ -187,6 +188,8 @@ public class Server {
 
                     // Operation-set bit for read operations
                     smtpClient.register(selector, SelectionKey.OP_READ);
+
+                    System.out.println("A new connection was made with " + smtpClient.getLocalAddress().toString());
 
                     sendResponse(smtpClient, buffer, connectionResponse, true);
                     // Tests whether this key's channel is ready for reading
