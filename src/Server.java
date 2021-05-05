@@ -233,12 +233,21 @@ public class Server {
                             break;
                         case NONE:
                             String currentMessage = new String(readMessage(buffer, 0), messageCharset);
-                            if (currentMessage.endsWith("\r\n.\r\n")) {
-                                state.setMessage(state.getMessage() + currentMessage.substring(0, currentMessage.length() - 5));
-                                key.attach(state);
-                                sendResponse(smtpClient, buffer, okayResponse, false);
+                            if (currentMessage.endsWith(".\r\n")) {
+                                if(state.getMessage() != null && state.getMessage().endsWith("\r\n"))  {
+                                    sendResponse(smtpClient, buffer, okayResponse, false);
+                                }else if (currentMessage.endsWith("\r\n.\r\n")){
+                                    String trimmed = currentMessage.substring(0, currentMessage.length() - 5);
+                                    state.setMessage(state.getMessage() == null ?
+                                            trimmed :
+                                            state.getMessage() + trimmed);
+                                    key.attach(state);
+                                    sendResponse(smtpClient, buffer, okayResponse, false);
+                                }
                             } else {
-                                state.setMessage(state.getMessage() + currentMessage);
+                                state.setMessage(state.getMessage() == null ?
+                                        currentMessage :
+                                        state.getMessage() + currentMessage);
                                 key.attach(state);
                             }
                             break;
