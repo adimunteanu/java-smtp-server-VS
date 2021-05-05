@@ -80,7 +80,7 @@ public class SMTPClient {
 	 */
 	private static boolean sendHelpNext() {
 		
-		if(Math.random() < 0.2)
+		if(Math.random() < 7)
 			return true;
 		
 		return false;
@@ -137,7 +137,7 @@ public class SMTPClient {
 	 * @throws IOException
 	 */
 	private static boolean readCommandLine(SocketChannel socketChannel, ByteBuffer buffer) throws IOException {
-		
+
 		boolean foundHyphen = false;
 		int pos = buffer.position();
 		
@@ -440,13 +440,13 @@ public class SMTPClient {
 		}
 		
 		
-		if(args.length != 2) {
-			printUsage();
-			System.exit(1);
-		}
+//		if(args.length != 2) {
+//			printUsage();
+//			System.exit(1);
+//		}
 		
 		try {
-			remoteAddress = new InetSocketAddress(args[0], Integer.parseInt(args[1]));
+			remoteAddress = new InetSocketAddress("localhost", 1111);
 		} catch(IllegalArgumentException e) {
 			printUsage();
 			System.exit(1);
@@ -455,7 +455,7 @@ public class SMTPClient {
 			System.exit(1);
 		}
 		
-		System.out.println("Connecting to SMTP server " + args[0] + ":" + args[1]);
+		System.out.println( "Connecting to SMTP server " + "localhost" + ":" + "1111");
 		
 		try {
 			selector = Selector.open();

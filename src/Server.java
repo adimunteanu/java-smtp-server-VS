@@ -84,11 +84,16 @@ public class Server {
                 buffer.flip();
                 break;
             }
+
+            if (buffer.get(i) == '\r' && buffer.get(i + 1) == '\n') {
+                buffer.flip();
+                break;
+            }
         }
 
-        byte[] message = new byte[buffer.limit() - startPos - 5];
+        byte[] message = new byte[buffer.limit() - startPos];
 
-        for (int i = startPos; i < buffer.limit() - 5; i++) {
+        for (int i = startPos; i < buffer.limit(); i++) {
             message[i - startPos] = buffer.get(i);
         }
 
@@ -227,9 +232,15 @@ public class Server {
                             sendResponse(smtpClient, buffer, dataResponse, false);
                             break;
                         case NONE:
-                            state.setMessage(new String(readMessage(buffer, 0), messageCharset));
-                            key.attach(state);
-                            sendResponse(smtpClient, buffer, okayResponse, false);
+                            String currentMessage = new String(readMessage(buffer, 0), messageCharset);
+                            if (currentMessage.endsWith("\r\n.\r\n")) {
+                                state.setMessage(state.getMessage() + currentMessage.substring(0, currentMessage.length() - 5));
+                                key.attach(state);
+                                sendResponse(smtpClient, buffer, okayResponse, false);
+                            } else {
+                                state.setMessage(state.getMessage() + currentMessage);
+                                key.attach(state);
+                            }
                             break;
                         case QUIT:
                             IOUtils.createEmailFile(state.getReceiver(), state.getSender(), state.getMessage_id(), state.getMessage());
