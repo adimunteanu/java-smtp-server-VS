@@ -6,11 +6,19 @@ public class ClientState {
     Command lastState;
 
     public ClientState() {
-        lastState = null;
-        receiver = null;
-        sender = null;
-        message = null;
-        message_id = -1;
+        this.lastState = null;
+        this.receiver = "";
+        this.sender = "";
+        this.message = "";
+        this.message_id = -1;
+    }
+
+    public void clearStateContent(){
+        this.receiver = "";
+        this.sender = "";
+        this.message = "";
+        this.message_id = -1;
+        this.lastState = null;
     }
 
     public String getReceiver() {
